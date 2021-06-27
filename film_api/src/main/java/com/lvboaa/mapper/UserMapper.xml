@@ -1,0 +1,102 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lvboaa.mapper.UserMapper">
+
+    <cache type="com.lvboaa.util.redis.RedisCache"
+           eviction="LRU"
+           flushInterval="6000000"
+           size="1024"
+           readOnly="false"></cache>
+
+    <select id="getAllUser" parameterType="java.util.HashMap" resultType="User">
+        select * from t_user
+        <where>
+            <if test="sex != ''">
+                and sex=#{sex}
+            </if>
+            <if test="username != ''">
+                and user_name like concat('%',#{username},'%')
+            </if>
+        </where>
+        limit  #{startIndex},#{pageSize}
+    </select>
+
+    <select id="getUserCount" parameterType="java.util.HashMap" resultType="_int">
+        select count(*) from t_user
+        <where>
+            <if test="sex != ''">
+                and sex=#{sex}
+            </if>
+            <if test="username != ''">
+                and user_name like concat('%',#{username},'%')
+            </if>
+        </where>
+    </select>
+
+    <insert id="insertUser" parameterType="java.util.HashMap">
+        insert into t_user
+        (user_name, password, sex, photo, phone, email, state)
+        values
+        (#{username}, #{password}, 0,"/images/user/1.jpg", #{phone}, #{email}, 0)
+    </insert>
+
+    <update id="updateUser" parameterType="java.util.HashMap">
+        update t_user
+        <set>
+            <if test="userName != null and userName != ''">
+                user_name=#{userName},
+            </if>
+            <if test="password != null and password != ''" >
+                password=#{password},
+            </if>
+            <if test="sex != null and sex != ''">
+                sex=#{sex},
+            </if>
+            <if test="birthday != null and birthday != ''">
+                birthday=#{birthday},
+            </if>
+            <if test="photo != null and photo != null">
+                photo=#{photo},
+            </if>
+            <if test="phone != null and phone != ''">
+                phone=#{phone},
+            </if>
+            <if test="email != null and email != ''">
+                email=#{email},
+            </if>
+        </set>
+        where user_id=#{userId}
+    </update>
+
+    <delete id="deleteUser" parameterType="int">
+        delete from t_user where user_id=#{userId}
+    </delete>
+
+    <delete id="deleteUsers" parameterType="java.util.List">
+        delete from t_user where user_id in
+        <foreach collection="list" open="(" separator="," close=")" item="id">
+            #{id}
+        </foreach>
+    </delete>
+
+    <select id="getUserByName" resultType="User">
+        select * from t_user where user_name=#{userName}
+    </select>
+
+    <select id="getAdminByName" resultType="Admin">
+        select * from t_admin where admin_name=#{adminName}
+    </select>
+
+    <select id="getUserById" resultType="User">
+        select * from t_user where user_id=#{userId}
+    </select>
+
+
+    <update id="stateUser" parameterType="java.util.HashMap">
+        update t_user set state=#{state} where user_id = #{userId}
+    </update>
+
+    <select id="checkUser" parameterType="java.util.HashMap" resultType="_int">
+        select count(*) from t_user where user_name=#{userName}
+    </select>
+</mapper>

@@ -1,0 +1,96 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lvboaa.mapper.OrderMapper">
+
+    <select id="getAllOrder" parameterType="java.util.HashMap" resultType="Order">
+        select o.*,u.user_name from
+        (select *  from t_order
+        <where>
+            <if test="userName != ''">
+                and user_id = (select user_id from t_user where user_name =  #{userName})
+            </if>
+            <if test="state != ''">
+                and state=#{state}
+            </if>
+        </where>
+        limit  #{startIndex},#{pageSize}) o,t_user u where o.user_id = u.user_id
+    </select>
+
+    <select id="getOrderCount" parameterType="java.util.HashMap" resultType="_int">
+        select count(*) from t_order
+        <where>
+            <if test="userName != ''">
+                and user_id = (select user_id from t_user where user_name =  #{userName})
+            </if>
+            <if test="state != ''">
+                and state=#{state}
+            </if>
+        </where>
+    </select>
+
+    <insert id="insertOrder" useGeneratedKeys="true" keyProperty="orderId" parameterType="java.util.HashMap">
+        insert into t_order
+        (user_id, schedule_id, number, price, seat, state, date)
+        values
+        (#{userId}, #{scheduleId}, #{number}, #{price}, #{seat}, #{state}, #{date})
+    </insert>
+
+    <update id="updateOrder" parameterType="Order">
+        update t_order
+        <set>
+            <if test="state != 0">
+                state=#{state},
+            </if>
+            <if test="code != null">
+                code=#{code}
+            </if>
+        </set>
+        where order_id=#{orderId}
+    </update>
+
+    <delete id="deleteOrder" parameterType="int">
+        delete from t_order where order_id=#{orderId}
+    </delete>
+
+    <delete id="deleteUsers" parameterType="java.util.List">
+        delete from t_order where order_id in
+        <foreach collection="list" open="(" separator="," close=")" item="id">
+            #{id}
+        </foreach>
+    </delete>
+
+    <select id="getOrderById" parameterType="int" resultType="Order">
+        select * from t_order where order_id=#{orderId}
+    </select>
+
+    <select id="getOrderInfoByScheduleId" parameterType="int" resultType="OrderVO">
+        select d.date,d.cinema_name,d.hall_name,d.movie_name,t_movie_interval.begin_time from
+        (select c.*,t_movie.movie_name from
+        (select b.*,t_hall.hall_name from
+        (select a.*,t_cinema.cinema_name from
+        (select * from t_schedule where schedule_id=#{scheduleId})a,t_cinema
+        where a.cinema_id=t_cinema.cinema_id) b,t_hall
+        where b.hall_id=t_hall.hall_id) c,t_movie
+        where c.movie_id=t_movie.movie_id) d,t_movie_interval
+        where d.movie_interval_id=t_movie_interval.movie_interval_id
+    </select>
+
+    <select id="getOrderInfoByUserId" parameterType="int" resultType="OrderVo">
+        select d.order_id,d.st as seat,d.pr as price,d.state,d.code,d.date,d.cinema_name,d.photo,d.hall_name,d.movie_name,t_movie_interval.begin_time from
+        (select c.*,t_movie.movie_name,t_movie.photo from
+        (select b.*,t_hall.hall_name from
+        (select a.*,t_cinema.cinema_name from
+        (select e.order_id,e.st,e.state,e.code,e.pr,t_schedule.*	from
+        (select order_id,schedule_id as sid,seat as st,price as pr,state,code from t_order where user_id=#{userId})e,
+        t_schedule where e.sid=t_schedule.schedule_id)a,t_cinema
+        where a.cinema_id=t_cinema.cinema_id) b,t_hall
+        where b.hall_id=t_hall.hall_id) c,t_movie
+        where c.movie_id=t_movie.movie_id) d,t_movie_interval
+        where d.movie_interval_id=t_movie_interval.movie_interval_id order by d.order_id desc
+    </select>
+
+    <select id="getAllPriceByMovieId" parameterType="_int" resultType="int">
+        select truncate(sum(price),0) price from t_order where
+        schedule_id in (select schedule_id from t_schedule where movie_id=#{movie_id})
+    </select>
+</mapper>

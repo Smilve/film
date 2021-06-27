@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+    <settings>
+        <!--日志-->
+        <setting name="logImpl" value="LOG4J"/>
+        <!--驼峰命名转换-->
+        <setting name="mapUnderscoreToCamelCase" value="true" />
+        <!--显式开启缓存，默认值为true，不设置value也是true-->
+        <setting name="cacheEnabled" value="true"/>
+    </settings>
+    <!--别名-->
+    <typeAliases>
+        <package name="com.lvboaa.pojo"/>
+        <package name="com.lvboaa.dto"/>
+        <package name="com.lvboaa.vo"/>
+    </typeAliases>
+
+    <!--xml和java文件映射 资源-->
+    <mappers>
+        <package name="com.lvboaa.mapper"/>
+    </mappers>
+</configuration>

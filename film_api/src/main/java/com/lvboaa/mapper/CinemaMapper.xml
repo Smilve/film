@@ -1,0 +1,96 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lvboaa.mapper.CinemaMapper">
+
+    <cache type="com.lvboaa.util.redis.RedisCache"
+           eviction="LRU"
+           flushInterval="6000000"
+           size="1024"
+           readOnly="false"></cache>
+
+    <select id="getAllCinema" parameterType="java.util.HashMap" resultType="Cinema">
+        select * from t_cinema
+        <where>
+            <if test="cinemaName != ''">
+                and cinema_name like concat('%',#{cinemaName},'%')
+            </if>
+        </where>
+        limit  #{startIndex},#{pageSize}
+    </select>
+
+    <select id="getCinemaCount" parameterType="java.util.HashMap" resultType="_int">
+        select count(*) from t_cinema
+        <where>
+            <if test="cinemaName != ''">
+                and cinema_name like concat('%',#{cinemaName},'%')
+            </if>
+        </where>
+    </select>
+
+    <insert id="insertCinema" parameterType="java.util.HashMap">
+        insert into t_cinema
+        (cinema_name, phone, provice, city, country, address)
+        values
+        (#{cinemaName}, #{phone}, #{provice}, #{city}, #{country}, #{address})
+    </insert>
+
+    <update id="updateCinema" parameterType="java.util.HashMap">
+        update t_cinema set
+        cinema_name=#{cinemaName}, phone=#{phone}, provice=#{provice}, city=#{city}, country=#{country}, address=#{address}
+        where cinema_id=#{cinemaId}
+    </update>
+
+    <delete id="deleteCinema" parameterType="int">
+        delete from t_cinema where cinema_id=#{cinemaId}
+    </delete>
+
+    <delete id="deleteCinemas" parameterType="java.util.List">
+        delete from t_cinema where cinema_id in
+        <foreach collection="list" open="(" separator="," close=")" item="id">
+            #{id}
+        </foreach>
+    </delete>
+    <select id="getCinemaById" resultType="Cinema">
+        select * from t_cinema where cinema_id=#{cinemaId}
+    </select>
+
+    <select id="getAllCinemaVo" resultType="CinemaVo">
+        select cinema_id,cinema_name from t_cinema
+    </select>
+
+    <select id="getAllCinemaByUser" resultType="Cinema" parameterType="java.util.HashMap">
+        select a.* from
+        (select * from t_cinema
+        <where>
+            <if test="cinemaBrandName != null and cinemaBrandName != '' and cinemaBrandName != '全部'">
+                cinema_name like concat('%',#{cinemaBrandName},'%')
+            </if>
+            <if test="cinemaAreaName != null and cinemaAreaName != '' and cinemaAreaName != '全部'">
+                and country = #{cinemaAreaName}
+            </if>
+            <if test="movieId != 0 ">
+                and cinema_id in (select cinema_id from t_schedule where movie_id=#{movieId})
+            </if>
+        </where>) a inner join t_hall on a.cinema_id=t_hall.cinema_id
+        <if test="hallCategoryName != null and hallCategoryName != '' and hallCategoryName != '全部'">
+            and t_hall.hall_name like concat('%',#{hallCategoryName},'%')
+        </if>
+        group by cinema_id
+    </select>
+
+    <select id="getAllMovieByCinemaId" resultType="Movie">
+        select * from t_movie where movie_id in
+        (select movie_id from t_schedule where cinema_id=#{cinemaId})
+    </select>
+
+    <select id="getScheduleByMovieId" resultType="ScheduleVo">
+        select c.schedule_id,c.date,c.language,c.price,c.begin_time,c.end_time,d.hall_name from (select a.*,b.begin_time,b.end_time from
+        (select * from t_schedule where cinema_id=#{cinemaId} and movie_id=#{movieId}) a,t_movie_interval b
+        where a.movie_interval_id=b.movie_interval_id) c,t_hall d
+        where c.hall_id = d.hall_id
+    </select>
+
+    <select id="getCinemaByName" parameterType="java.util.HashMap" resultType="Cinema">
+        select * from t_cinema where cinema_name like concat('%',#{cinemaName},'%')
+    </select>
+</mapper>

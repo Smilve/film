@@ -1,0 +1,42 @@
+server:
+  port: 8080
+
+spring:
+  profiles:
+    active: dev
+  # 文件上传大小限制
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 10MB
+  redis:
+    host: 127.0.0.1
+    port: 6379
+    connect-timeout: 10000
+    jedis:
+      pool:
+        max-idle: 100     # 最大空闲连接
+        max-active: 200   # 最大连接数
+        max-wait: -1      # 最大阻塞等待时间 -1表示没有限制
+        min-idle: 0
+    lettuce:
+      pool:
+        max-idle: 100     # 最大空闲连接
+        max-active: 200   # 最大连接数
+        max-wait: -1      # 最大阻塞等待时间 -1表示没有限制
+        min-idle: 0
+
+mybatis:
+  mapper-locations: classpath*:mapper/*.xml
+  configuration:
+    cache-enabled: true
+    map-underscore-to-camel-case: true #配置开启驼峰式命名
+  type-aliases-package: com.lvboaa.pojo,;com.lvboaa.vo,;com.lvboaa.dto
+
+logging:
+  level:
+    com.lvboaa: debug
+  file:
+    name: log.log
+    path: /log  # 根目录

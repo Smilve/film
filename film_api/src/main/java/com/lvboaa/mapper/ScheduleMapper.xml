@@ -1,0 +1,68 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lvboaa.mapper.ScheduleMapper">
+
+    <select id="getAllSchedule" parameterType="java.util.HashMap" resultType="Schedule">
+        select d.*,e.movie_interval_name from
+        (select b.*,h.hall_name from
+        (select a.*,c.cinema_name from
+        (select s.*,m.movie_name from t_schedule s,t_movie m
+        where s.movie_id=m.movie_id
+        <if test="cinemaId != 'null' and cinemaId != ''">
+            and s.cinema_id=#{cinemaId}
+        </if>
+        <if test="movieName != ''">
+            and movie_name like concat('%',#{movieName},'%')
+        </if>
+        ) a,t_cinema c
+        where a.cinema_id = c.cinema_id) b,t_hall h
+        where b.hall_id = h.hall_id) d,t_movie_interval e
+        where d.movie_interval_id = e.movie_interval_id
+        limit  #{startIndex},#{pageSize}
+
+    </select>
+
+    <select id="getScheduleCount" parameterType="java.util.HashMap" resultType="_int">
+        select count(*) from t_schedule c,t_movie m
+        where c.movie_id = m.movie_id
+        <if test="cinemaId != 'null' and cinemaId != ''">
+            and c.cinema_id=#{cinemaId}
+        </if>
+        <if test="movieName != ''">
+            and movie_name like concat('%',#{movieName},'%')
+        </if>
+    </select>
+    <insert id="insertSchedule" parameterType="java.util.HashMap">
+        insert into t_schedule
+        (movie_id,cinema_id, hall_id, movie_interval_id, date,`language`, price, seat)
+        values
+        (#{movieId},#{cinemaId}, #{hallId}, #{movieIntervalId}, #{date}, #{language},#{price}, #{seat})
+    </insert>
+
+    <update id="updateSchedule" parameterType="java.util.HashMap">
+        update t_schedule set movie_id=#{movieId},cinema_id=#{cinemaId},hall_id=#{hallId},movie_interval_id=#{movieIntervalId},
+        date=#{date},`language`=#{language},price=#{price},seat=#{seat} where schedule_id=#{scheduleId}
+    </update>
+
+    <update id="updateSeats" parameterType="java.util.HashMap">
+        update t_schedule set
+        seat=#{seat} where schedule_id=#{scheduleId}
+    </update>
+
+    <delete id="deleteSchedule" parameterType="int">
+        delete from t_schedule where schedule_id=#{scheduleId}
+    </delete>
+
+    <delete id="deleteSchedules" parameterType="java.util.List">
+        delete from t_schedule where schedule_id in
+        <foreach collection="list" open="(" separator="," close=")" item="id">
+            #{id}
+        </foreach>
+    </delete>
+
+    <select id="getScheduleById" parameterType="int" resultType="Schedule">
+        select * from t_schedule where schedule_id = #{scheduleId}
+    </select>
+
+
+</mapper>

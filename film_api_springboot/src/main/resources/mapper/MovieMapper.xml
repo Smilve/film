@@ -1,0 +1,171 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lvboaa.mapper.MovieMapper">
+
+    <cache type="com.lvboaa.util.redis.RedisCache"
+           eviction="LRU"
+           flushInterval="6000000"
+           size="1024"
+           readOnly="false"></cache>
+
+    <select id="getAllMovie" parameterType="java.util.HashMap" resultType="Movie">
+        select * from t_movie
+        <where>
+            <if test="movieName != null and movieName != ''">
+                and movie_name like concat('%',#{movieName},'%')
+            </if>
+        </where>
+        limit  #{startIndex},#{pageSize}
+    </select>
+
+    <select id="getMovieCount" parameterType="java.util.HashMap" resultType="_int">
+        select count(*) from t_movie
+        <where>
+            <if test="movieName != null and movieName != ''">
+                and movie_name like concat('%',#{movieName},'%')
+            </if>
+        </where>
+    </select>
+
+    <insert id="insertMovie" parameterType="java.util.HashMap">
+        insert into t_movie
+        (movie_name, photo, director, actor, type, nation, language, time, date, score, intro)
+        values
+        (#{movieName}, #{photo}, #{director}, #{actor}, #{type}, #{nation}, #{language}, #{time},#{date},10,#{intro})
+    </insert>
+
+    <select id="getMovieById" resultType="Movie">
+        select * from t_movie where movie_id = #{movieId}
+    </select>
+
+    <update id="updateMovie" parameterType="java.util.HashMap">
+        update t_movie set
+        movie_name=#{movieName}, photo=#{photo}, director=#{director}, actor=#{actor}, type=#{type}, nation=#{nation}, language=#{language}, time=#{time}, date=#{date}, intro=#{intro}
+        where movie_id=#{movieId}
+    </update>
+
+    <update id="updateScore" parameterType="java.util.HashMap">
+        update t_movie set score=#{score} where movie_id=#{movieId}
+    </update>
+
+    <delete id="deleteMovie" parameterType="int">
+        delete from t_movie where movie_id=#{movieId}
+    </delete>
+
+    <delete id="deleteMovies" parameterType="java.util.List">
+        delete from t_movie where movie_id in
+        <foreach collection="list" open="(" separator="," close=")" item="id">
+            #{id}
+        </foreach>
+    </delete>
+
+    <select id="getAllMovieVo" resultType="MovieVo">
+        select movie_id,movie_name from t_movie
+    </select>
+
+    <!-- where date &gt;= #{startDate} and date &lt;= #{endDate}-->
+    <select id="getAllIngMovie" parameterType="java.util.HashMap" resultType="Movie">
+        select * from t_movie
+        where movie_id in (select distinct movie_id from t_schedule)
+        <if test="type != null and type != '' and type != '全部'">
+          and type like CONCAT('%',#{type},'%')
+        </if>
+        <if test="nation != null and nation != '' and nation != '全部'">
+          and nation = #{nation}
+        </if>
+        order by score desc
+        limit  #{startIndex},#{pageSize}
+    </select>
+
+    <select id="getAllIngMovieCount" parameterType="java.util.HashMap" resultType="_int">
+        select count(*) from t_movie
+        where movie_id in (select distinct movie_id from t_schedule)
+        <if test="type != null and type != '' and type != '全部'">
+            and type like CONCAT('%',#{type},'%')
+        </if>
+        <if test="nation != null and nation != '' and nation != '全部'">
+            and nation = #{nation}
+        </if>
+    </select>
+
+    <select id="getAllWillMovie" parameterType="java.util.HashMap" resultType="Movie">
+        select * from t_movie
+        where movie_id not in (select distinct movie_id from t_schedule) and date &gt; #{date}
+        <if test="type != null and type != '' and type != '全部'">
+            and type like CONCAT('%',#{type},'%')
+        </if>
+        <if test="nation != null and nation != '' and nation != '全部'">
+            and nation = #{nation}
+        </if>
+        limit  #{startIndex},#{pageSize}
+    </select>
+
+    <select id="getAllWillMovieCount" parameterType="java.util.HashMap" resultType="_int">
+        select count(*) from t_movie
+        where movie_id not in (select distinct movie_id from t_schedule) and date &gt; #{date}
+        <if test="type != null and type != '' and type != '全部'">
+            and type like CONCAT('%',#{type},'%')
+        </if>
+        <if test="nation != null and nation != '' and nation != '全部'">
+            and nation = #{nation}
+        </if>
+    </select>
+
+    <select id="getClassicMovie" parameterType="java.util.HashMap" resultType="Movie">
+        select * from t_movie
+        <where>
+            <if test="type != null and type != '' and type != '全部'">
+                and type like CONCAT('%',#{type},'%')
+            </if>
+            <if test="nation != null and nation != '' and nation != '全部'">
+                and nation = #{nation}
+            </if>
+            <if test="movieAge != '全部' and movieAge != null and (startDate == null or startDate == '')">
+                and date &lt;= CAST(#{movieAge} AS SIGNED) and date &gt;= CAST(#{movieAge} AS SIGNED)-1
+            </if>
+            <if test="startDate != null and startDate != ''">
+                and date >= CAST(#{startDate}AS SIGNED) and date &lt;= CAST(#{endDate}AS SIGNED)
+            </if>
+            and date &lt;= #{date}
+        </where>
+        limit  #{startIndex},#{pageSize}
+    </select>
+
+    <select id="getClassicMovieCount" parameterType="java.util.HashMap" resultType="_int">
+        select count(*) from t_movie
+        <where>
+            <if test="type != null and type != '' and type != '全部'">
+                and type like CONCAT('%',#{type},'%')
+            </if>
+            <if test="nation != null and nation != '' and nation != '全部'">
+                and nation = #{nation}
+            </if>
+            <if test="movieAge != '全部' and movieAge != null and (startDate == null or startDate == '')">
+                and date &lt;= CAST(#{movieAge} AS SIGNED)
+            </if>
+            <if test="startDate != null and startDate != ''">
+                and date >= CAST(#{startDate}AS SIGNED) and date &lt;= CAST(#{endDate}AS SIGNED)
+            </if>
+            and date &lt;= #{date}
+        </where>
+    </select>
+
+    <select id="getTopMovie" parameterType="java.util.HashMap" resultType="Movie">
+        select * from t_movie
+        where date &lt;= #{date}
+        order by score desc
+        limit  #{startIndex},#{pageSize}
+    </select>
+
+    <select id="getMovieByName" parameterType="java.util.HashMap" resultType="Movie">
+        select * from t_movie where movie_name like concat('%',#{movieName},'%')
+    </select>
+
+    <select id="getMovieByList" parameterType="java.util.List" resultType="Movie">
+        select * from t_movie where movie_id in
+        <foreach collection="list" open="(" separator="," close=")" item="id">
+            #{id}
+        </foreach>
+        order by score desc
+    </select>
+</mapper>

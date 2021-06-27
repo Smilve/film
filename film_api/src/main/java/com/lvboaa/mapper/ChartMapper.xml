@@ -1,0 +1,50 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lvboaa.mapper.ChartMapper">
+    <select id="getTop3CinemaId" resultType="int">
+        select cinema_id
+        from t_order,t_schedule where state=1 and t_order.schedule_id=t_schedule.schedule_id
+         group by cinema_id order by sum(t_order.price) desc limit 3
+    </select>
+
+    <!--根据影院得到当前日期前七天的每天的销售额'2021-05-05'  后面那段是得到最近七天日期-->
+    <select id="getChartByCinemaId" parameterType="java.util.HashMap" resultType="Double">
+        select ifnull(price,0) price from (select left(date,10) date,sum(price) price from t_order
+        where state=1 and schedule_id in (select schedule_id from t_schedule where cinema_id=#{cinemaId}) and
+        left(date,10)>=#{date} group by left(date,10))a right join
+        (select date_add(#{date},interval @i:=@i+1 day) as date
+        from (
+        select 1
+        union all select 1
+        union all select 1
+        union all select 1
+        union all select 1
+        union all select 1
+        union all select 1
+        ) as tmp,
+        (select @i:= -1) t) b on a.date=b.date order by b.date
+    </select>
+
+    <select id="getTop3MovieId" resultType="int">
+        select movie_id
+        from t_order,t_schedule where state=1 and t_order.schedule_id=t_schedule.schedule_id
+        group by cinema_id order by sum(t_order.price) desc limit 3
+    </select>
+
+    <select id="getChartByMovieId" parameterType="java.util.HashMap" resultType="Double">
+        select ifnull(price,0) price from (select left(date,10) date,sum(price) price from t_order
+        where state=1 and schedule_id in (select schedule_id from t_schedule where movie_id=#{movieId})
+        and left(date,10)>=#{date} group by left(date,10))a right join
+        (select date_add(#{date},interval @i:=@i+1 day) as date
+        from (
+        select 1
+        union all select 1
+        union all select 1
+        union all select 1
+        union all select 1
+        union all select 1
+        union all select 1
+        ) as tmp,
+        (select @i:= -1) t) b on a.date=b.date order by b.date
+    </select>
+</mapper>

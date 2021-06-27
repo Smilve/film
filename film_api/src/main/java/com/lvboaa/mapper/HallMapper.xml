@@ -1,0 +1,61 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lvboaa.mapper.HallMapper">
+
+    <select id="getAllHall" parameterType="java.util.HashMap" resultType="Hall">
+        select h.*,c.cinema_name from t_hall h,t_cinema c
+        where h.cinema_id = c.cinema_id
+            <if test="cinemaId != 'null' and cinemaId != ''">
+                and c.cinema_id=#{cinemaId}
+            </if>
+            <if test="cinemaName != ''">
+                and c.cinema_name like concat('%',#{cinemaName},'%')
+            </if>
+        limit  #{startIndex},#{pageSize}
+    </select>
+
+    <select id="getHallCount" parameterType="java.util.HashMap" resultType="_int">
+        select count(*) from t_hall h,t_cinema c
+        where h.cinema_id = c.cinema_id
+        <if test="cinemaId != 'null' and cinemaId != ''">
+            and c.cinema_id=#{cinemaId}
+        </if>
+        <if test="cinemaName != ''">
+            and c.cinema_name like concat('%',#{cinemaName},'%')
+        </if>
+    </select>
+
+    <insert id="insertHall" parameterType="java.util.HashMap">
+        insert into t_hall
+        (hall_name, cinema_id, `row`, col, seat) values (#{hallName},#{cinemaId},#{row},#{col},#{seat})
+    </insert>
+
+    <update id="updateHall" parameterType="java.util.HashMap">
+        update t_hall set hall_name=#{hallName},cinema_id=#{cinemaId},
+        `row`=#{row},col=#{col},seat=#{seat}
+        where hall_id=#{hallId}
+    </update>
+
+    <delete id="deleteHall" parameterType="int">
+        delete from t_hall where hall_id=#{hallId}
+    </delete>
+
+    <delete id="deleteHalls" parameterType="java.util.List">
+        delete from t_hall where hall_id in
+        <foreach collection="list" open="(" separator="," close=")" item="id">
+            #{id}
+        </foreach>
+    </delete>
+    <select id="getHallById" resultType="Hall">
+        select * from t_hall where hall_id=#{hallId}
+    </select>
+
+    <select id="getHallVoByCinemaId" resultType="HallVo">
+        select hall_id,hall_name,seat from t_hall where
+        cinema_id=#{cinemaId}
+    </select>
+
+    <update id="updateSeat" parameterType="java.util.HashMap">
+        update t_hall set seat=#{seat} where hall_id=#{hallId}
+    </update>
+</mapper>

@@ -1,0 +1,44 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lvboaa.mapper.MovieIntervalMapper">
+
+    <select id="getAllMovieIntervalByPage" resultType="MovieInterval">
+        select * from t_movie_interval
+        limit  #{startIndex},#{pageSize}
+    </select>
+
+    <select id="getAllMovieInterval" resultType="MovieInterval">
+        select * from t_movie_interval
+    </select>
+
+    <select id="getMovieIntervalCount" parameterType="java.util.HashMap" resultType="_int">
+        select count(*) from t_movie_interval
+        limit  #{startIndex},#{pageSize}
+    </select>
+
+    <select id="getMovieIntervalById" parameterType="int" resultType="MovieInterval">
+        select * from t_movie_interval where movie_interval_id=#{movieIntervalId}
+    </select>
+
+    <insert id="insertIntervalMovie" parameterType="java.util.HashMap">
+        insert into t_movie_interval (movie_interval_name,begin_time,end_time) values
+        (#{movieIntervalName},#{beginTime},#{endTime})
+    </insert>
+
+    <update id="updateMovieInterval" parameterType="java.util.HashMap" >
+        update t_movie_interval set movie_interval_name=#{movieIntervalName},begin_time=#{beginTime},end_time=#{endTime}
+        where movie_interval_id=#{movieIntervalId}
+    </update>
+
+    <delete id="deleteMovieInterval" parameterType="int">
+        delete from t_movie_interval where movie_interval_id=#{movieIntervalId}
+    </delete>
+
+    <delete id="deleteMovieIntervals" parameterType="java.util.List">
+        delete from t_movie_interval where movie_interval_id in
+        <foreach collection="list" open="(" separator="," close=")" item="id">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>
