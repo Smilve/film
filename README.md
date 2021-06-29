@@ -23,3 +23,10 @@ Mybatis整合Redis实现二级缓存；Redtful风格的接口实现；整合Swag
 5. 进入film_user文件夹下，执行`npm run install`，再执行`npm run serve`，在浏览器窗口输入对应的路径访问项目
 
 
+* 首页
+
+![image](https://user-images.githubusercontent.com/43447303/123766508-56398a80-d8f9-11eb-8515-56c555b29e23.png)
+
+* 我的订单
+
+![image](https://user-images.githubusercontent.com/43447303/123766560-618cb600-d8f9-11eb-8946-1babcb96bd38.png)
