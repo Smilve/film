@@ -46,9 +46,6 @@
             <if test="userName != null and userName != ''">
                 user_name=#{userName},
             </if>
-            <if test="password != null and password != ''" >
-                password=#{password},
-            </if>
             <if test="sex != null and sex != ''">
                 sex=#{sex},
             </if>
